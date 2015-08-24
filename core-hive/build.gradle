@@ -1,3 +1,5 @@
+apply plugin: 'maven-publish'
+
 dependencies {
   compile("com.lucidworks.hadoop:solr-core-io:${bigDataVersion}") {
     transitive = false
@@ -19,4 +21,15 @@ test {
   sourceSets.test.runtimeClasspath = configurations.solrtest + sourceSets.test.runtimeClasspath
 
   systemProperty 'test.resources.dir', "src/test/resources"
+}
+
+publishing {
+  publications {
+    core(MavenPublication) {
+      from components.java
+      groupId 'com.lucidworks.hadoop'
+      version "${bigDataVersion}"
+      artifactId = "solr-${project.name}"
+    }
+  }
 }
