@@ -1,0 +1,22 @@
+dependencies {
+  compile("com.lucidworks.hadoop:solr-core-io:${bigDataVersion}") {
+    transitive = false
+  }
+
+  compile("org.apache.hive:hive-common:${hiveVersion}") {
+    exclude group: "org.apache.zookeeper"
+    transitive = false
+  }
+  compile("org.apache.hive:hive-exec:${hiveVersion}") {
+    exclude group: "org.apache.zookeeper"
+    transitive = false
+  }
+}
+
+test {
+
+  sourceSets.test.compileClasspath = configurations.solrtest + sourceSets.test.compileClasspath
+  sourceSets.test.runtimeClasspath = configurations.solrtest + sourceSets.test.runtimeClasspath
+
+  systemProperty 'test.resources.dir', "src/test/resources"
+}
