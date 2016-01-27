@@ -18,7 +18,6 @@ The build uses Gradle. To build the .jar files, run this command:
 
 `./gradlew clean shadowJar --info`
 
-
 This will make two .jar files, one for use with Hive v0.13 *only*, and another that can be used with Hive 0.12, 0.14, and 0.15.
 
 [listing]
@@ -28,7 +27,7 @@ solr-hive-serde-0.13/build/libs/solr-hive-serde-0.13-{version}.jar
 
 == Using the SerDe
 
-// tag::install[]
+// tag::install-hive[]
 === Install the SerDe Jar to Hive
 
 In order for Hive to work with Solr, the Hive SerDe jar must be added as a plugin to Hive.
@@ -38,7 +37,7 @@ From a Hive prompt, use the `ADD JAR` command and reference the path and filenam
 `hive> ADD JAR solr-hive-serde.jar;`
 
 This can also be done in your Hive command to create the table, as in the example below.
-// end::install[]
+// end::install-hive[]
 
 // tag::create-table[]
 == Create External Tables
@@ -76,9 +75,37 @@ The specific Solr query to execute to read this table. If not defined, a default
 `lww.commit.on.close`::
 If true, inserts will be automatically committed when the connection is closed. True is the default.
 
+`lww.jaas.file`::
+Used only when indexing to or reading from a Solr cluster secured with Kerberos.
++
+This property defines the path to a JAAS file that contains a service principal and keytab location for a user who is authorized to read from and write to Solr and Hive.
++
+The JAAS configuration file *must* be copied to the same path on every node where a Node Manager is running (i.e., every node where map/reduce tasks are executed). Here is a sample section of a JAAS file:
++
+[source]
+Client { --<1>
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="/data/solr-indexer.keytab" --<2>
+  storeKey=true
+  useTicketCache=true
+  debug=true
+  principal="solr-indexer@SOLRSERVER.COM"; --<3>
+};
++
+<1> The name of this section of the JAAS file. This name will be used with the `lww.jaas.appname` parameter.
+<2> The location of the keytab file.
+<3> The service principal name. This should be a different principal than the one used for Solr, but must have access to both Solr and Hive.
+
+`lww.jaas.appname`::
+Used only when indexing to or reading from a Solr cluster secured with Kerberos.
++
+This property provides the name of the section in the JAAS file that includes the correct service principal and keytab path.
+
 If the table needs to be dropped at a later time, you can use the DROP TABLE command in Hive. This will remove the metadata stored in the table in Hive, but will not modify the underlying data (in this case, the Solr index).
 // end::create-table[]
-// tag::query[]
+
+// tag::query-hive[]
 == Query and Insert Content
 
 Once the table is configured, any syntactically correct Hive query will be able to query the Solr index.
@@ -100,8 +127,9 @@ And finally, to insert data to a table, simply use the Solr table as the target 
 hive> INSERT INTO solr
       SELECT id, field1, field2 FROM sometable;
 
-// end::query[]
-// tag::example[]
+// end::query-hive[]
+
+// tag::example-hive[]
 == Example Hive Table
 Solr includes a small number of sample documents for use when getting started. One of these is a CSV file containing book metadata. This file is found in your Solr installation, at `$SOLR_HOME/example/exampledocs/books.csv`.
 
@@ -120,7 +148,8 @@ CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLO
      LOCATION '/tmp/solr' -- <6>
      TBLPROPERTIES('solr.zkhost' = 'zknode1:2181,zknode2:2181,zknode3:2181/solr',
                    'solr.collection' = 'gettingstarted',
-                   'solr.query' = '*:*'); -- <7>
+                   'solr.query' = '*:*'),
+                   'lww.jaas.file' = '/data/jaas-client.conf'; -- <7>
 
 
 INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
@@ -128,9 +157,9 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 
 <1> Define the table `books`, and provide the field names and field types that will make up the table.
 <2> Load the data from the `books.csv` file.
-<3> Add the `solr-hive-serde.jar` file to Hive. Note the jar name shown here omits the version information which will be included in the jar file you have. If you are using Hive 0.13, you must also use a jar specifically built for 0.13.
+<3> Add the `lucidworks-hive-serde.jar` file to Hive. Note the jar name shown here omits the version information which will be included in the jar file you have. If you are using Hive 0.13, you must also use a jar specifically built for 0.13.
 <4> Create an external table named `solr`, and provide the field names and field types that will make up the table. These will be the same field names as in your local Hive table, so we can index all of the same data to Solr.
-<5> Define the custom storage handler provided by the `solr-hive-serde.jar`.
+<5> Define the custom storage handler provided by the `lucidworks-hive-serde.jar`.
 <6> Define storage location in HDFS.
-<7> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table.
-// end::example[]
+<7> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table. This example also refers to a JAAS configuration file that will be used to authenticate to the Kerberized Solr cluster.
+// end::example-hive[]
