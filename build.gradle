@@ -154,6 +154,8 @@ project('solr-hive-serde') {
 
     relocate 'org.apache.http', 'shaded.org.apache.http'
     relocate 'org.apache.solr', 'shaded.org.apache.solr'
+    // Shade guava due Tez conflicts
+    relocate 'com.google.common', 'shaded.com.google.common'
     // Remove unwanted files in root jar (repackaging)
     exclude 'JDOMAbout*.class'
     exclude '.gitkeep'
@@ -200,6 +202,8 @@ project('solr-hive-serde-0.13') {
 
     relocate 'org.apache.http', 'shaded.org.apache.http'
     relocate 'org.apache.solr', 'shaded.org.apache.solr'
+    // Shade guava due Tez conflicts
+    relocate 'com.google.common', 'shaded.com.google.common'
     // Remove unwanted files in root jar (repackaging)
     exclude 'JDOMAbout*.class'
     exclude '.gitkeep'
