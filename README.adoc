@@ -1,6 +1,5 @@
-:version: 2.2.1
-:jarfilename: solr-hive-serde-{version}.jar
-:jarfilenamehive013: solr-hive-serde-0.13-{version}.jar
+:jarfilename: solr-hive-serde-<version>.jar
+:jarfilenamehive013: solr-hive-serde-0.13-<version>.jar
 
 = Hive SerDe
 
