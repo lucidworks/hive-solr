@@ -32,9 +32,8 @@ To build the .jar files, run this command:
 
 This will make two .jar files, one for use with Hive v0.13 *only*, and another that can be used with Hive 0.12, 0.14,  0.15.
 
-[listing]
-solr-hive-serde/build/libs/{jarfilename}
-solr-hive-serde-0.13/build/libs/{jarfilenamehive013}
+* `solr-hive-serde/build/libs/{jarfilename}`
+* `solr-hive-serde-0.13/build/libs/{jarfilenamehive013}`
 
 // end::build-hive[]
 
@@ -150,7 +149,7 @@ Solr includes a small number of sample documents for use when getting started. O
 
 Using the sample `books.csv` file, we can see a detailed example of creating a table, loading data to it, and indexing that data to Solr.
 
-[source,sql]
+[source,sql,subs="attributes"]
 ----
 CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock BOOLEAN, author STRING, series STRING, seq INT, genre STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; -- <1>
 
