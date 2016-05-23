@@ -32,6 +32,7 @@ public class LWStorageHandler extends DefaultStorageHandler {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public Class<? extends SerDe> getSerDeClass() {
     return LWSerDe.class;
   }
