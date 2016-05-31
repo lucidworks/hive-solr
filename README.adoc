@@ -163,7 +163,7 @@ CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLO
      TBLPROPERTIES('solr.zkhost' = 'zknode1:2181,zknode2:2181,zknode3:2181/solr',
                    'solr.collection' = 'gettingstarted',
                    'solr.query' = '*:*'),
-                   'lww.jaas.file' = '/data/jaas-client.conf'; --<7>
+                   'lww.jaas.file' = '/data/jaas-client.conf'; --<7> 
 
 
 INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
