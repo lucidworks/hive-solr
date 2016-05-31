@@ -151,19 +151,19 @@ Using the sample `books.csv` file, we can see a detailed example of creating a t
 
 [source,sql,subs="attributes"]
 ----
-CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock BOOLEAN, author STRING, series STRING, seq INT, genre STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; -- <1>
+CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock BOOLEAN, author STRING, series STRING, seq INT, genre STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; --<1>
 
-LOAD DATA LOCAL INPATH '/solr/example/exampledocs/books.csv' OVERWRITE INTO TABLE books; -- <2>
+LOAD DATA LOCAL INPATH '/solr/example/exampledocs/books.csv' OVERWRITE INTO TABLE books; --<2>
 
-ADD JAR {jarfilename}; -- <3>
+ADD JAR {jarfilename}; --<3>
 
-CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLOAT, in_stock_b BOOLEAN, author_s STRING, series_s STRING, seq_i INT, genre_s STRING) -- <4>
-     STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler' -- <5>
-     LOCATION '/tmp/solr' -- <6>
+CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLOAT, in_stock_b BOOLEAN, author_s STRING, series_s STRING, seq_i INT, genre_s STRING) --<4>
+     STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler' --<5>
+     LOCATION '/tmp/solr' --<6>
      TBLPROPERTIES('solr.zkhost' = 'zknode1:2181,zknode2:2181,zknode3:2181/solr',
                    'solr.collection' = 'gettingstarted',
                    'solr.query' = '*:*'),
-                   'lww.jaas.file' = '/data/jaas-client.conf'; -- <7>
+                   'lww.jaas.file' = '/data/jaas-client.conf'; --<7>
 
 
 INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
