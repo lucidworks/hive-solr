@@ -181,7 +181,7 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 endif::[]
 
 ifndef::env-github[]
-[source,sql,subs="verbatim,attributes,callouts"]
+[source,sql,subs="attributes+,+callouts"]
 ----
 CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock BOOLEAN, author STRING, series STRING, seq INT, genre STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; --<1>
 
