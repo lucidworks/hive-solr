@@ -1,6 +1,5 @@
-:hivejarfile: solr-hive-serde-<version>.jar
-:hivejarfile013: solr-hive-serde-0.13-<version>.jar
-:env-github:
+:packageUser: solr
+:connectorVersion: 2.2.2
 
 = Hive SerDe
 
@@ -33,8 +32,8 @@ To build the .jar files, run this command:
 
 This will make two .jar files, one for use with Hive v0.13 *only*, and another that can be used with Hive 0.12, 0.14,  0.15.
 
-* `solr-hive-serde/build/libs/{hivejarfile}`
-* `solr-hive-serde-0.13/build/libs/{hivejarfile013}`
+* `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`
+* `solr-hive-serde-0.13/build/libs/{packageUser}-hive-serde-0.13-{connectorVersion}.jar`
 
 // end::build-hive[]
 
@@ -48,15 +47,8 @@ In order for Hive to work with Solr, the Hive SerDe jar must be added as a plugi
 
 From a Hive prompt, use the `ADD JAR` command and reference the path and filename of the SerDe jar for your Hive version.
 
-ifdef::env-github[]
 [source,subs="verbatim,attributes"]
-   hive> ADD JAR {hivejarfile};
-endif::[]
-
-ifndef::env-github[]
-[source,subs="verbatim,attributes"]
-   hive> ADD JAR ${hivejarfile};
-endif::[]
+   hive> ADD JAR {packageUser}-hive-serde-{connectorVersion}.jar;
 
 This can also be done in your Hive command to create the table, as in the <<example-hive,example below>>.
 // end::install-hive[]
@@ -158,14 +150,13 @@ Solr includes a small number of sample documents for use when getting started. O
 
 Using the sample `books.csv` file, we can see a detailed example of creating a table, loading data to it, and indexing that data to Solr.
 
-ifdef::env-github[]
 [source,sql,subs="verbatim,attributes,callouts"]
 ----
 CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock BOOLEAN, author STRING, series STRING, seq INT, genre STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; --<1>
 
 LOAD DATA LOCAL INPATH '/solr/example/exampledocs/books.csv' OVERWRITE INTO TABLE books; --<2>
 
-ADD JAR {hivejarfile}; --<3>
+ADD JAR {packageUser}-hive-serde-{connectorVersion}.jar; --<3>
 
 CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLOAT, in_stock_b BOOLEAN, author_s STRING, series_s STRING, seq_i INT, genre_s STRING) --<4>
      STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler' --<5>
@@ -178,29 +169,6 @@ CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLO
 
 INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 ----
-endif::[]
-
-ifndef::env-github[]
-[source,sql,subs="attributes+,+callouts"]
-----
-CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock BOOLEAN, author STRING, series STRING, seq INT, genre STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; --<1>
-
-LOAD DATA LOCAL INPATH '/solr/example/exampledocs/books.csv' OVERWRITE INTO TABLE books; --<2>
-
-ADD JAR ${hivejarfile}; --<3>
-
-CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLOAT, in_stock_b BOOLEAN, author_s STRING, series_s STRING, seq_i INT, genre_s STRING) --<4>
-     STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler' --<5>
-     LOCATION '/tmp/solr' --<6>
-     TBLPROPERTIES('solr.zkhost' = 'zknode1:2181,zknode2:2181,zknode3:2181/solr',
-                   'solr.collection' = 'gettingstarted',
-                   'solr.query' = '*:*'),
-                   'lww.jaas.file' = '/data/jaas-client.conf'; --<7>
-
-
-INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
-----
-endif::[]
 
 <1> Define the table `books`, and provide the field names and field types that will make up the table.
 <2> Load the data from the `books.csv` file.
@@ -211,12 +179,7 @@ ifndef::env-github[]
 <3> Add the `${hivejarfile}` file to Hive. Note the jar name shown here omits the version information which will be included in the jar file you have. If you are using Hive 0.13, you must also use a jar specifically built for 0.13.
 endif::[]
 <4> Create an external table named `solr`, and provide the field names and field types that will make up the table. These will be the same field names as in your local Hive table, so we can index all of the same data to Solr.
-ifdef::env-github[]
-<5> Define the custom storage handler provided by the `{hivejarfile}`.
-endif::[]
-ifndef::env-github[]
-<5> Define the custom storage handler provided by the `${hivejarfile}`.
-endif::[]
+<5> Define the custom storage handler provided by the `{packageUser}-hive-serde-{connectorVersion}.jar`.
 <6> Define storage location in HDFS.
 <7> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table. This example also refers to a JAAS configuration file that will be used to authenticate to the Kerberized Solr cluster.
 
