@@ -172,12 +172,7 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 
 <1> Define the table `books`, and provide the field names and field types that will make up the table.
 <2> Load the data from the `books.csv` file.
-ifdef::env-github[]
 <3> Add the `{hivejarfile}` file to Hive. Note the jar name shown here omits the version information which will be included in the jar file you have. If you are using Hive 0.13, you must also use a jar specifically built for 0.13.
-endif::[]
-ifndef::env-github[]
-<3> Add the `${hivejarfile}` file to Hive. Note the jar name shown here omits the version information which will be included in the jar file you have. If you are using Hive 0.13, you must also use a jar specifically built for 0.13.
-endif::[]
 <4> Create an external table named `solr`, and provide the field names and field types that will make up the table. These will be the same field names as in your local Hive table, so we can index all of the same data to Solr.
 <5> Define the custom storage handler provided by the `{packageUser}-hive-serde-{connectorVersion}.jar`.
 <6> Define storage location in HDFS.
