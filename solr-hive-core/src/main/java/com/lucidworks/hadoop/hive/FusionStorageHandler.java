@@ -17,6 +17,9 @@ import static com.lucidworks.hadoop.fusion.Constants.FUSION_PASS;
 import static com.lucidworks.hadoop.fusion.Constants.FUSION_QUERY_ENDPOINT;
 import static com.lucidworks.hadoop.fusion.Constants.FUSION_REALM;
 import static com.lucidworks.hadoop.fusion.Constants.FUSION_USER;
+import static com.lucidworks.hadoop.fusion.Constants.FUSION_QUERY;
+import static com.lucidworks.hadoop.fusion.Constants.FUSION_LOGIN_CONFIG;
+import static com.lucidworks.hadoop.fusion.Constants.FUSION_LOGIN_APP_NAME;
 
 public class FusionStorageHandler extends DefaultStorageHandler {
 
@@ -76,6 +79,21 @@ public class FusionStorageHandler extends DefaultStorageHandler {
     String user = tableProps.getProperty(FUSION_USER);
     if (user != null) {
       jobProps.put(FUSION_USER, user);
+    }
+
+    String fusionQuery = tableProps.getProperty(FUSION_QUERY);
+    if (fusionQuery != null) {
+      jobProps.put(FUSION_QUERY, fusionQuery);
+    }
+
+    String fusionLoginConfig = tableProps.getProperty(FUSION_LOGIN_CONFIG);
+    if (fusionLoginConfig != null) {
+      jobProps.put(FUSION_LOGIN_CONFIG, fusionLoginConfig);
+    }
+
+    String fusionLoginAppName = tableProps.getProperty(FUSION_LOGIN_APP_NAME);
+    if (fusionLoginAppName != null) {
+      jobProps.put(FUSION_LOGIN_APP_NAME, fusionLoginAppName);
     }
 
     String auth = tableProps.getProperty(FUSION_AUTHENABLED, "true");
