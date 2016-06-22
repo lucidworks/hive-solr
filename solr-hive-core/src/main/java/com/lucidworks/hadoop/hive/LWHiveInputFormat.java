@@ -1,7 +1,9 @@
 package com.lucidworks.hadoop.hive;
 
+import com.lucidworks.hadoop.io.LWDocumentWritable;
 import com.lucidworks.hadoop.io.LWMapRedInputFormat;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapred.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +91,8 @@ public class LWHiveInputFormat extends LWMapRedInputFormat {
   }
 
   @Override
-  public RecordReader getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
+  public RecordReader<IntWritable, LWDocumentWritable>  getRecordReader(
+      InputSplit split, JobConf job, Reporter reporter) throws IOException {
     LWHiveInputSplit inputSplit = (LWHiveInputSplit) split;
     return super.getRecordReader(inputSplit.getInputSplit(), job, reporter);
   }

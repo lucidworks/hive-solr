@@ -1,7 +1,9 @@
 package com.lucidworks.hadoop.hive;
 
 import com.lucidworks.hadoop.io.FusionInputFormat;
+import com.lucidworks.hadoop.io.LWDocumentWritable;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -94,7 +96,8 @@ public class FusionHiveInputFormat extends FusionInputFormat {
   }
 
   @Override
-  public RecordReader getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
+  public RecordReader<IntWritable, LWDocumentWritable> getRecordReader(
+      InputSplit split, JobConf job, Reporter reporter) throws IOException {
     FusionHiveInputSplit inputSplit = (FusionHiveInputSplit) split;
     return super.getRecordReader(inputSplit.getInputSplit(), job, reporter);
   }
