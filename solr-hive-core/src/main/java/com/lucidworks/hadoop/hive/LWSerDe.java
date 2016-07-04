@@ -25,6 +25,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Random;
+import java.util.UUID;
 
 // deprecation -> SerDe
 @SuppressWarnings("deprecation")
@@ -115,21 +117,16 @@ public class LWSerDe implements SerDe {
     // Fields...
     StructObjectInspector inspector = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = inspector.getAllStructFieldRefs();
-
-    for (int i = 0; i < fields.size(); i++) {
+    
+    //doc.setId(new Random(System.nanoTime()).nextInt(1000000000)+""+System.currentTimeMillis());
+	doc.setId(UUID.randomUUID()+"");    
+for (int i = 0; i < fields.size(); i++) {
       StructField f = fields.get(i);
       String docFieldName = colNames.get(i);
 
-      if (docFieldName.equalsIgnoreCase("id")) {
-        if (f.getFieldObjectInspector().getCategory() == Category.PRIMITIVE) {
-          Object id = inspector.getStructFieldData(data, f);
-          doc.setId(id.toString()); // We're making a lot of assumption here that this is a string
 
-        } else {
-          throw new SerDeException("id field must be a primitive [String] type");
-        }
 
-      } else {
+
         switch (f.getFieldObjectInspector().getCategory()) {
           case PRIMITIVE:
             Object value = ObjectInspectorUtils
@@ -146,9 +143,11 @@ public class LWSerDe implements SerDe {
                 "We don't yet support nested types (found " + f.getFieldObjectInspector()
                     .getTypeName() + ")");
         }
-      }
+      
     }
 
     return new LWDocumentWritable(doc);
   }
+  
+
 }
