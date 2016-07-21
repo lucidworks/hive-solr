@@ -48,14 +48,8 @@ public class LWSerDe implements SerDe {
         .getTypeInfosFromTypeString(tblProperties.getProperty(Constants.LIST_COLUMN_TYPES));
     typeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(colNames, colTypes);
     inspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
-    row = new ArrayList<Object>();
-
-    try {
-      LWDocumentProvider.init((JobConf) conf);
-      this.conf = (JobConf) conf;
-    } catch (Exception e) {
-      LOG.warn("LWDocumentFactoryHandler not initialize");
-    }
+    row = new ArrayList<>();
+    this.conf = (JobConf) conf;
   }
 
   @Override
