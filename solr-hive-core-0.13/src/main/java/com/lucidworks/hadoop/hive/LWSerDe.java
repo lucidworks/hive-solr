@@ -36,7 +36,6 @@ public class LWSerDe implements SerDe {
   protected List<String> colNames;
   protected List<TypeInfo> colTypes;
   protected List<Object> row;
-  private JobConf conf;
 
   @Override
   public void initialize(Configuration conf, Properties tblProperties) throws SerDeException {
@@ -47,7 +46,6 @@ public class LWSerDe implements SerDe {
     typeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(colNames, colTypes);
     inspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     row = new ArrayList<>();
-    this.conf = (JobConf) conf;
   }
 
   @Override
