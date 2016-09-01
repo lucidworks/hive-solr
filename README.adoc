@@ -35,6 +35,23 @@ This will make two .jar files, one for use with Hive v0.13 *only*, and another t
 * `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`
 * `solr-hive-serde-0.13/build/libs/{packageUser}-hive-serde-0.13-{connectorVersion}.jar`
 
+=== Troubleshooting
+
+If GitHub + SSH is not configured the following exception will be thrown:
+
+[source]
+----
+    Cloning into 'solr-hadoop-common'...
+    Permission denied (publickey).
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    fatal: clone of 'git@github.com:LucidWorks/solr-hadoop-common.git' into submodule path 'solr-hadoop-common' failed
+----
+
+Use the next tutorial to fix the exception: https://help.github.com/articles/generating-an-ssh-key/
+
 // end::build-hive[]
 
 // tag: using-serde[]

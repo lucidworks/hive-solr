@@ -7,7 +7,11 @@ buildscript {
 }
 
 plugins {
-  id 'com.github.johnrengelman.shadow' version '1.2.2'
+  id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '3.0'
 }
 
 defaultTasks 'dist'
@@ -36,6 +40,11 @@ subprojects {
       mavenLocal()
       jcenter()
       mavenCentral()
+    }
+    
+    test {
+      reports.html.destination = file("$buildDir/reports/tests")
+      reports.junitXml.destination = file("$buildDir/test-results")
     }
 
     jacocoTestReport {
