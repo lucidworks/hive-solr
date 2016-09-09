@@ -200,12 +200,12 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 
 == How to contribute
 
-1. Fork a repo i.e. <username|organization>/hadoop-solr, follow the next tutorial: http://help.github.com/fork-a-repo/[http://help.github.com/fork-a-repo/]
+1. Fork a repo i.e. <username|organization>/hive-solr, follow the next tutorial: http://help.github.com/fork-a-repo/[http://help.github.com/fork-a-repo/]
 2. Clone the forked repo on your local machine:
 
 [source, git]
 ----------------------------------------------------------------------
-$ git clone https://github.com/<username|organization>/hadoop-solr.git
+$ git clone https://github.com/<username|organization>/hive-solr.git
 ----------------------------------------------------------------------
 
 [start=3]
