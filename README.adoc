@@ -74,9 +74,14 @@ This can also be done in your Hive command to create the table, as in the <<exam
 // end::install-hive[]
 
 // tag::create-table[]
-== Indexing Data to Solr
+== Indexing Data with a Hive External Table
 
-An external table in Hive allows the data in the table to be used (read or write) by another system or application outside of Hive. For integration with Solr, the external table allows you to have Solr read from and write to Hive.
+Indexing data to Solr or Fusion requires creating a Hive external table. An external table allows the data in the table to be used (read or write) by another system or application outside of Hive.
+
+// tag::index-solr[]
+=== Indexing Data to Solr
+
+For integration with Solr, the external table allows you to have Solr read from and write to Hive.
 
 To create an external table for Solr, you can use a command similar to below. The properties available are described after the example.
 
@@ -138,19 +143,20 @@ This property provides the name of the section in the JAAS file that includes th
 
 If the table needs to be dropped at a later time, you can use the DROP TABLE command in Hive. This will remove the metadata stored in the table in Hive, but will not modify the underlying data (in this case, the Solr index).
 
-// end::create-table[]
+// end::index-solr[]
 
 // tag::index-fusion[]
 === Indexing Data to Fusion
 If you use Lucidworks Fusion, you can index data from Hive to Solr via Fusion's index pipelines. These pipelines allow you several options for further transforming your data.
 
-TIP: If you are using Fusion, you already have the Hive SerDe in Fusion's `./apps/connectors/resources/lucid.hadoop/jobs` directory.
+[TIP]
+====
+If you are using Fusion, you already have the Hive SerDe in Fusion's `./apps/connectors/resources/lucid.hadoop/jobs` directory. The SerDe jar that supports Fusion is v2.2.4 or higher. This was released with Fusion 3.0.
 
-To use the SerDe with Fusion, you need to replace some of the Solr parameters described above with new parameters designed for Fusion.
+A 2.2.4 or higher jar built from this repository will also work with Fusion 2.4.x releases.
+====
 
-First, the class used to index data to Fusion is `com.lucidworks.hadoop.hive.FusionStorageHandler` instead of the `LWStorageHandler` shown in the previous example.
-
-This is an example Hive command to create an external table to index documents in Fusion and be able to query the table later. You will need to define several properties in `TBLPROPERTIES`:
+This is an example Hive command to create an external table to index documents in Fusion and to query the table later.
 
 [source,sql]
 hive> CREATE EXTERNAL TABLE fusion (id string, field1 string, field2 int)
@@ -163,6 +169,8 @@ hive> CREATE EXTERNAL TABLE fusion (id string, field1 string, field2 int)
                     'fusion.jaas.appname' = 'FusionClient',);
                     'fusion.query.endpoints' = 'http://localhost:8764/api/apollo/query-pipelines/<pipeline>/collections/<collection>/<handler>/?',
                     'fusion.query' = '*:*'
+
+In this example, we have created an external table named "fusion", and defined a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'`).
 
 Here are the details for each parameter in `TBLPROPERTIES`:
 
@@ -218,6 +226,7 @@ The query to run in Fusion to select records to be read into Hive. This is `\*:*
 If you do not intend to query your Fusion data from Hive, you can skip this parameter.
 
 // end::index-fusion[]
+// end::create-table[]
 
 // tag::query-hive[]
 == Query and Insert Content
