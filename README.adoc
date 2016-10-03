@@ -162,7 +162,7 @@ This is an example Hive command to create an external table to index documents i
 [source,sql]
 hive> CREATE EXTERNAL TABLE fusion (id string, field1 string, field2 int)
       STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'
-      LOCATION '/tmp/solr'
+      LOCATION '/tmp/fusion'
       TBLPROPERTIES('fusion.endpoints' = 'http://localhost:8764/api/apollo/index-pipelines/<pipeline>/collections/<collection>/index',
                     'fusion.realm' = 'KERBEROS',
                     'fusion.user' = 'fusion-indexer@FUSIONSERVER.COM',
@@ -173,7 +173,9 @@ hive> CREATE EXTERNAL TABLE fusion (id string, field1 string, field2 int)
 
 In this example, we have created an external table named "fusion", and defined a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'`).
 
-Here are the details for each parameter in `TBLPROPERTIES`:
+The LOCATION indicates the location in HDFS where the table data will be stored. In this example, we have chosen to use `/tmp/fusion`.
+
+In the section TBLPROPERTIES, we define several properties for Fusion so the data can be indexed to the right Fusion installation and collection:
 
 `fusion.endpoints`::
 The full URL to the index pipeline in Fusion. The URL should include the pipeline name and the collection data will be indexed to.
