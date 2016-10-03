@@ -1,5 +1,5 @@
 :packageUser: solr
-:connectorVersion: 2.2.2
+:connectorVersion: 2.2.5
 
 = Hive SerDe
 
@@ -11,22 +11,25 @@ This project includes tools to build a Hive SerDe to index Hive tables to Solr.
 * Index Hive table data to Solr.
 * Read Solr index data to a Hive table.
 * Kerberos support for securing communication between Hive and Solr.
+* As of v2.2.4 of the SerDe, integration with  http://lucidworks.com/fusion[Lucidworks Fusion] is supported.
+** Fusion's index pipelines can be used to index data to Fusion.
+** Fusion's query pipelines can be used to query Fusion's Solr instance for data to insert into a Hive table.
 // end::hive-features[]
 
 // tag::build-hive[]
 == Build the SerDe Jars
 
-This project has a dependency on the `solr-hadoop-common` submodule (also a separate GitHub repository, https://github.com/lucidworks/solr-hadoop-common). This submodule must be initialized before building the SerDe .jar.
+This project has a dependency on the `solr-hadoop-common` submodule (contained in a separate GitHub repository, https://github.com/lucidworks/solr-hadoop-common). This submodule must be initialized before building the SerDe .jar.
 
 To initialize the submodule, pull this repo, then:
 
    git submodule init
 
-Once the submodule has been initialized, the command `git submodule update` will fetch all the data from that project and check out the appropriate commit listed in the superproject. You must initialize and update the submodule before attempting to build the SerDe .jar.
+Once the submodule has been initialized, the command `git submodule update` will fetch all the data from that project and check out the appropriate commit listed in the superproject. You must initialize and update the submodule before attempting to build the SerDe jar.
 
-The build uses Gradle; however, you do not need to have Gradle already installed before attempting to build.
+The build uses Gradle. However, you do not need to have Gradle already installed before attempting to build.
 
-To build the .jar files, run this command:
+To build the jar files, run this command:
 
    ./gradlew clean shadowJar --info
 
@@ -35,9 +38,9 @@ This will make two .jar files, one for use with Hive v0.13 *only*, and another t
 * `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`
 * `solr-hive-serde-0.13/build/libs/{packageUser}-hive-serde-0.13-{connectorVersion}.jar`
 
-=== Troubleshooting
+=== Troubleshooting Clone Issues
 
-If GitHub + SSH is not configured the following exception will be thrown:
+If GitHub and SSH are not configured the following exception will be thrown:
 
 [source]
 ----
@@ -50,7 +53,7 @@ If GitHub + SSH is not configured the following exception will be thrown:
     fatal: clone of 'git@github.com:LucidWorks/solr-hadoop-common.git' into submodule path 'solr-hadoop-common' failed
 ----
 
-Use the next tutorial to fix the exception: https://help.github.com/articles/generating-an-ssh-key/
+To fix this error, use the https://help.github.com/articles/generating-an-ssh-key/[generating an SSH key] tutorial.
 
 // end::build-hive[]
 
@@ -70,10 +73,16 @@ From a Hive prompt, use the `ADD JAR` command and reference the path and filenam
 This can also be done in your Hive command to create the table, as in the <<example-hive,example below>>.
 // end::install-hive[]
 
-// tag::create-table[]
-== Create External Tables
+// tag::create-table-intro[]
+=== Indexing Data with a Hive External Table
 
-An external table in Hive allows the data in the table to be used (read or write) by another system or application outside of Hive. For integration with Solr, the external table allows you to have Solr read from and write to Hive.
+Indexing data to Solr or Fusion requires creating a Hive external table. An external table allows the data in the table to be used (read or write) by another system or application outside of Hive.
+// end::create-table-intro[]
+
+// tag::index-solr[]
+==== Indexing Data to Solr
+
+For integration with Solr, the external table allows you to have Solr read from and write to Hive.
 
 To create an external table for Solr, you can use a command similar to below. The properties available are described after the example.
 
@@ -135,16 +144,101 @@ This property provides the name of the section in the JAAS file that includes th
 
 If the table needs to be dropped at a later time, you can use the DROP TABLE command in Hive. This will remove the metadata stored in the table in Hive, but will not modify the underlying data (in this case, the Solr index).
 
-// end::create-table[]
+// end::index-solr[]
+
+// tag::index-fusion[]
+==== Indexing Data to Fusion
+If you use Lucidworks Fusion, you can index data from Hive to Solr via Fusion's index pipelines. These pipelines allow you several options for further transforming your data.
+
+[TIP]
+====
+If you are using Fusion, you already have the Hive SerDe in Fusion's `./apps/connectors/resources/lucid.hadoop/jobs` directory. The SerDe jar that supports Fusion is v2.2.4 or higher. This was released with Fusion 3.0.
+
+A 2.2.4 or higher jar built from this repository will also work with Fusion 2.4.x releases.
+====
+
+This is an example Hive command to create an external table to index documents in Fusion and to query the table later.
+
+[source,sql]
+hive> CREATE EXTERNAL TABLE fusion (id string, field1 string, field2 int)
+      STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'
+      LOCATION '/tmp/solr'
+      TBLPROPERTIES('fusion.endpoints' = 'http://localhost:8764/api/apollo/index-pipelines/<pipeline>/collections/<collection>/index',
+                    'fusion.realm' = 'KERBEROS',
+                    'fusion.user' = 'fusion-indexer@FUSIONSERVER.COM',
+                    'java.security.auth.login.config' = '/path/to/JAAS/file',
+                    'fusion.jaas.appname' = 'FusionClient',);
+                    'fusion.query.endpoints' = 'http://localhost:8764/api/apollo/query-pipelines/<pipeline>/collections/<collection>/<handler>/?',
+                    'fusion.query' = '*:*'
+
+In this example, we have created an external table named "fusion", and defined a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'`).
+
+Here are the details for each parameter in `TBLPROPERTIES`:
+
+`fusion.endpoints`::
+The full URL to the index pipeline in Fusion. The URL should include the pipeline name and the collection data will be indexed to.
+
+`fusion.realm`::
+This is used with `fusion.user` and `fusion.password` to authenticate to Fusion for indexing data. Two options are supported, `KERBEROS` or `NATIVE`.
++
+Kerberos authentication is supported with the additional definition of a JAAS file. The properties `java.security.auth.login.config` and `fusion.jaas.appname` are used to define the location of the JAAS file and the section of the file to use.
++
+Native authentication uses a Fusion-defined username and password. This user must exist in Fusion, and have the proper permissions to index documents.
+
+`fusion.user`::
+The Fusion username or Kerberos principal to use for authentication to Fusion. If a Fusion username is used (`'fusion.realm' = 'NATIVE'`), the `fusion.password` must also be supplied.
+
+`fusion.password`::
+This property is not shown in the example above. The password for the `fusion.user` when the `fusion.realm` is `NATIVE`.
+
+`java.security.auth.login.config`::
+This property defines the path to a JAAS file that contains a service principal and keytab location for a user who is authorized to read from and write to Fusion and Hive.
++
+The JAAS configuration file *must* be copied to the same path on every node where a Node Manager is running (i.e., every node where map/reduce tasks are executed). Here is a sample section of a JAAS file:
++
+[source]
+Client { --<1>
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="/data/fusion-indexer.keytab" --<2>
+  storeKey=true
+  useTicketCache=true
+  debug=true
+  principal="fusion-indexer@FUSIONSERVER.COM"; --<3>
+};
++
+<1> The name of this section of the JAAS file. This name will be used with the `fusion.jaas.appname` parameter.
+<2> The location of the keytab file.
+<3> The service principal name. This should be a different principal than the one used for Fusion, but must have access to both Fusion and Hive. This name is used with the `fusion.user` parameter described above.
+
+`fusion.jaas.appname`::
+Used only when indexing to or reading from Fusion when it is secured with Kerberos.
++
+This property provides the name of the section in the JAAS file that includes the correct service principal and keytab path.
+
+`fusion.query.endpoints`::
+The full URL to a query pipeline in Fusion. The URL should include the pipeline name and the collection data will be read from. You should also specify the request handler to be used.
++
+If you do not intend to query your Fusion data from Hive, you can skip this parameter.
+
+`fusion.query`::
+The query to run in Fusion to select records to be read into Hive. This is `\*:*` by default, which selects all records in the index.
++
+If you do not intend to query your Fusion data from Hive, you can skip this parameter.
+
+// end::index-fusion[]
+
 
 // tag::query-hive[]
-== Query and Insert Content
+=== Query and Insert Data to Hive
 
-Once the table is configured, any syntactically correct Hive query will be able to query the Solr index.
+Once the table is configured, any syntactically correct Hive query will be able to query the index.
 
 For example, to select three fields named "id", "field1", and "field2" from the "solr" table, you would use a query such as:
 
 `hive> SELECT id, field1, field2 FROM solr;`
+
+Replace the table name as appropriate to use this example with your data.
 
 To join data from tables, you can make a request such as:
 
@@ -162,7 +256,7 @@ hive> INSERT INTO solr
 // end::query-hive[]
 
 // tag::example-hive[]
-== Example Hive Table
+=== Example Indexing Hive to Solr
 Solr includes a small number of sample documents for use when getting started. One of these is a CSV file containing book metadata. This file is found in your Solr installation, at `$SOLR_HOME/example/exampledocs/books.csv`.
 
 Using the sample `books.csv` file, we can see a detailed example of creating a table, loading data to it, and indexing that data to Solr.
@@ -180,8 +274,8 @@ CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLO
      LOCATION '/tmp/solr' --<6>
      TBLPROPERTIES('solr.zkhost' = 'zknode1:2181,zknode2:2181,zknode3:2181/solr',
                    'solr.collection' = 'gettingstarted',
-                   'solr.query' = '*:*'),
-                   'lww.jaas.file' = '/data/jaas-client.conf'; --<7>
+                   'solr.query' = '*:*'), --<7>
+                   'lww.jaas.file' = '/data/jaas-client.conf'; --<8>
 
 
 INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
@@ -193,7 +287,8 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 <4> Create an external table named `solr`, and provide the field names and field types that will make up the table. These will be the same field names as in your local Hive table, so we can index all of the same data to Solr.
 <5> Define the custom storage handler provided by the `{packageUser}-hive-serde-{connectorVersion}.jar`.
 <6> Define storage location in HDFS.
-<7> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table. This example also refers to a JAAS configuration file that will be used to authenticate to the Kerberized Solr cluster.
+<7> The query to run in Solr to read records from Solr for use in Hive.
+<8> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table. This example also refers to a JAAS configuration file that will be used to authenticate to the Kerberized Solr cluster.
 
 // end::example-hive[]
 // end::using-serde[]
