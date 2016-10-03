@@ -11,25 +11,25 @@ This project includes tools to build a Hive SerDe to index Hive tables to Solr.
 * Index Hive table data to Solr.
 * Read Solr index data to a Hive table.
 * Kerberos support for securing communication between Hive and Solr.
-* As of v2.2.4 of the SerDe, better integration with  http://lucidworks.com/fusion[Lucidworks Fusion] is supported.
-** Fusion's index pipelines can be used while indexing content to Fusion.
+* As of v2.2.4 of the SerDe, integration with  http://lucidworks.com/fusion[Lucidworks Fusion] is supported.
+** Fusion's index pipelines can be used to index data to Fusion.
 ** Fusion's query pipelines can be used to query Fusion's Solr instance for data to insert into a Hive table.
 // end::hive-features[]
 
 // tag::build-hive[]
 == Build the SerDe Jars
 
-This project has a dependency on the `solr-hadoop-common` submodule (also a separate GitHub repository, https://github.com/lucidworks/solr-hadoop-common). This submodule must be initialized before building the SerDe .jar.
+This project has a dependency on the `solr-hadoop-common` submodule (contained in a separate GitHub repository, https://github.com/lucidworks/solr-hadoop-common). This submodule must be initialized before building the SerDe .jar.
 
 To initialize the submodule, pull this repo, then:
 
    git submodule init
 
-Once the submodule has been initialized, the command `git submodule update` will fetch all the data from that project and check out the appropriate commit listed in the superproject. You must initialize and update the submodule before attempting to build the SerDe .jar.
+Once the submodule has been initialized, the command `git submodule update` will fetch all the data from that project and check out the appropriate commit listed in the superproject. You must initialize and update the submodule before attempting to build the SerDe jar.
 
-The build uses Gradle; however, you do not need to have Gradle already installed before attempting to build.
+The build uses Gradle. However, you do not need to have Gradle already installed before attempting to build.
 
-To build the .jar files, run this command:
+To build the jar files, run this command:
 
    ./gradlew clean shadowJar --info
 
@@ -38,9 +38,9 @@ This will make two .jar files, one for use with Hive v0.13 *only*, and another t
 * `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`
 * `solr-hive-serde-0.13/build/libs/{packageUser}-hive-serde-0.13-{connectorVersion}.jar`
 
-=== Troubleshooting
+=== Troubleshooting Clone Issues
 
-If GitHub + SSH is not configured the following exception will be thrown:
+If GitHub and SSH are not configured the following exception will be thrown:
 
 [source]
 ----
@@ -53,7 +53,7 @@ If GitHub + SSH is not configured the following exception will be thrown:
     fatal: clone of 'git@github.com:LucidWorks/solr-hadoop-common.git' into submodule path 'solr-hadoop-common' failed
 ----
 
-Use the next tutorial to fix the exception: https://help.github.com/articles/generating-an-ssh-key/
+To fix this error, use the https://help.github.com/articles/generating-an-ssh-key/[generating an SSH key] tutorial.
 
 // end::build-hive[]
 
@@ -73,13 +73,14 @@ From a Hive prompt, use the `ADD JAR` command and reference the path and filenam
 This can also be done in your Hive command to create the table, as in the <<example-hive,example below>>.
 // end::install-hive[]
 
-// tag::create-table[]
-== Indexing Data with a Hive External Table
+// tag::create-table-intro[]
+=== Indexing Data with a Hive External Table
 
 Indexing data to Solr or Fusion requires creating a Hive external table. An external table allows the data in the table to be used (read or write) by another system or application outside of Hive.
+// end::create-table-intro[]
 
 // tag::index-solr[]
-=== Indexing Data to Solr
+==== Indexing Data to Solr
 
 For integration with Solr, the external table allows you to have Solr read from and write to Hive.
 
@@ -146,7 +147,7 @@ If the table needs to be dropped at a later time, you can use the DROP TABLE com
 // end::index-solr[]
 
 // tag::index-fusion[]
-=== Indexing Data to Fusion
+==== Indexing Data to Fusion
 If you use Lucidworks Fusion, you can index data from Hive to Solr via Fusion's index pipelines. These pipelines allow you several options for further transforming your data.
 
 [TIP]
@@ -178,7 +179,7 @@ Here are the details for each parameter in `TBLPROPERTIES`:
 The full URL to the index pipeline in Fusion. The URL should include the pipeline name and the collection data will be indexed to.
 
 `fusion.realm`::
-This is used with `fusion.user` and `fusion.password` to authenticate to Fusion for indexing content. Two options are supported, `KERBEROS` or `NATIVE`.
+This is used with `fusion.user` and `fusion.password` to authenticate to Fusion for indexing data. Two options are supported, `KERBEROS` or `NATIVE`.
 +
 Kerberos authentication is supported with the additional definition of a JAAS file. The properties `java.security.auth.login.config` and `fusion.jaas.appname` are used to define the location of the JAAS file and the section of the file to use.
 +
@@ -226,16 +227,18 @@ The query to run in Fusion to select records to be read into Hive. This is `\*:*
 If you do not intend to query your Fusion data from Hive, you can skip this parameter.
 
 // end::index-fusion[]
-// end::create-table[]
+
 
 // tag::query-hive[]
-== Query and Insert Content
+=== Query and Insert Data to Hive
 
-Once the table is configured, any syntactically correct Hive query will be able to query the Solr index.
+Once the table is configured, any syntactically correct Hive query will be able to query the index.
 
 For example, to select three fields named "id", "field1", and "field2" from the "solr" table, you would use a query such as:
 
 `hive> SELECT id, field1, field2 FROM solr;`
+
+Replace the table name as appropriate to use this example with your data.
 
 To join data from tables, you can make a request such as:
 
@@ -253,7 +256,7 @@ hive> INSERT INTO solr
 // end::query-hive[]
 
 // tag::example-hive[]
-== Example Hive Table
+=== Example Indexing Hive to Solr
 Solr includes a small number of sample documents for use when getting started. One of these is a CSV file containing book metadata. This file is found in your Solr installation, at `$SOLR_HOME/example/exampledocs/books.csv`.
 
 Using the sample `books.csv` file, we can see a detailed example of creating a table, loading data to it, and indexing that data to Solr.
