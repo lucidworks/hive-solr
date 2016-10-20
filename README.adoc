@@ -1,5 +1,5 @@
 :packageUser: solr
-:connectorVersion: 2.2.5
+:connectorVersion: 2.2.6
 
 = Hive SerDe
 
