@@ -11,15 +11,16 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.COMMIT_ON_CLOSE;
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.ENABLE_FIELD_MAPPING;
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.SOLR_COLLECTION;
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.SOLR_QUERY;
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.SOLR_SERVER_URL;
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.SOLR_ZKHOST;
+
 public class LWStorageHandler extends DefaultStorageHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(LWStorageHandler.class);
-
-  public static final String SOLR_ZKHOST = "solr.zkhost";
-  public static final String SOLR_COLLECTION = "solr.collection";
-  public static final String SOLR_SERVER_URL = "solr.server.url";
-  public static final String SOLR_QUERY = "solr.query";
-  public static final String COMMIT_ON_CLOSE = "lww.commit.on.close";
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
@@ -78,5 +79,8 @@ public class LWStorageHandler extends DefaultStorageHandler {
     // Commit on close [yes]
     String commit = tableProps.getProperty(COMMIT_ON_CLOSE, "true");
     jobProps.put(COMMIT_ON_CLOSE, commit);
+
+    String enableFieldMapping = tableProps.getProperty(ENABLE_FIELD_MAPPING, "false");
+    jobProps.put(ENABLE_FIELD_MAPPING, enableFieldMapping);
   }
 }
