@@ -83,6 +83,7 @@ project('solr-hive-core') {
     }
     compile("org.apache.solr:solr-solrj:${solrVersion}") {
       exclude group: 'org.apache.hadoop'
+      exclude group: 'junit'
     }
     compile("org.apache.hadoop:hadoop-common:${hadoop2Version}@jar")
     compile("org.apache.hadoop:hadoop-client:${hadoop2Version}") {
@@ -104,8 +105,18 @@ project('solr-hive-core') {
     testCompile "org.apache.lucene:lucene-analyzers-common:${solrVersion}"
     testCompile "commons-collections:commons-collections:3.2.1"
 
-    testCompile "org.apache.solr:solr-test-framework:${solrVersion}"
+    testCompile ("org.apache.solr:solr-test-framework:${solrVersion}") {
+      exclude group: 'junit'
+    }
     testCompile "org.apache.mrunit:mrunit:1.0.0:hadoop2@jar"
+    testCompile "com.klarna:hiverunner:3.2.0"
+    testCompile "junit:junit:4.12"
+    testCompile (project(':solr-hadoop-common:solr-hadoop-testbase')) {
+      transitive = false
+    }
+    testCompile(project(':solr-hadoop-common:solr-hadoop-document')) {
+      transitive = false
+    }
   }
 }
 
@@ -123,6 +134,7 @@ project('solr-hive-core-0.13') {
     }
     compile("org.apache.solr:solr-solrj:${solrVersion}") {
       exclude group: 'org.apache.hadoop'
+      exclude group: 'junit'
     }
     compile("org.apache.hadoop:hadoop-common:${hadoop2Version}@jar")
     compile("org.apache.hadoop:hadoop-client:${hadoop2Version}") {
@@ -144,7 +156,9 @@ project('solr-hive-core-0.13') {
     testCompile "org.apache.lucene:lucene-analyzers-common:${solrVersion}"
     testCompile "commons-collections:commons-collections:3.2.1"
 
-    testCompile "org.apache.solr:solr-test-framework:${solrVersion}"
+    testCompile ("org.apache.solr:solr-test-framework:${solrVersion}") {
+      exclude group: 'junit'
+    }
     testCompile "org.apache.mrunit:mrunit:1.0.0:hadoop2@jar"
   }
 }

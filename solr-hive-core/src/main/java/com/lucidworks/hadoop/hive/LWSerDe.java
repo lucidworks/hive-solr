@@ -3,19 +3,13 @@ package com.lucidworks.hadoop.hive;
 import com.lucidworks.hadoop.io.LWDocument;
 import com.lucidworks.hadoop.io.LWDocumentProvider;
 import com.lucidworks.hadoop.io.LWDocumentWritable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -23,9 +17,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+
+import static com.lucidworks.hadoop.hive.HiveSolrConstants.ENABLE_FIELD_MAPPING;
+import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.copyToStandardJavaObject;
 
 // deprecation -> SerDe
 @SuppressWarnings("deprecation")
@@ -38,16 +40,16 @@ public class LWSerDe implements SerDe {
   protected List<String> colNames;
   protected List<TypeInfo> colTypes;
   protected List<Object> row;
+  protected boolean enableFieldMapping;
 
   @Override
   public void initialize(Configuration conf, Properties tblProperties) throws SerDeException {
-
     colNames = Arrays.asList(tblProperties.getProperty(Constants.LIST_COLUMNS).split(","));
-    colTypes = TypeInfoUtils
-        .getTypeInfosFromTypeString(tblProperties.getProperty(Constants.LIST_COLUMN_TYPES));
+    colTypes = TypeInfoUtils.getTypeInfosFromTypeString(tblProperties.getProperty(Constants.LIST_COLUMN_TYPES));
     typeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(colNames, colTypes);
     inspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     row = new ArrayList<>();
+    enableFieldMapping = Boolean.valueOf(tblProperties.getProperty(ENABLE_FIELD_MAPPING, "false"));
   }
 
   @Override
@@ -108,44 +110,61 @@ public class LWSerDe implements SerDe {
     // Fields...
     StructObjectInspector inspector = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = inspector.getAllStructFieldRefs();
+    boolean existsId = false;
 
     for (int i = 0; i < fields.size(); i++) {
-      StructField f = fields.get(i);
+      StructField structField = fields.get(i);
       String docFieldName = colNames.get(i);
 
       if (docFieldName.equalsIgnoreCase("id")) {
-        if (f.getFieldObjectInspector().getCategory() == Category.PRIMITIVE) {
-          Object id = inspector.getStructFieldData(data, f);
+        if (structField.getFieldObjectInspector().getCategory() == Category.PRIMITIVE) {
+          Object id = inspector.getStructFieldData(data, structField);
           doc.setId(id.toString()); // We're making a lot of assumption here that this is a string
 
         } else {
           throw new SerDeException("id field must be a primitive [String] type");
         }
 
+        existsId = true;
+
       } else {
-	    ObjectInspector foi = f.getFieldObjectInspector();
+        ObjectInspector foi = structField.getFieldObjectInspector();
         Category foiCategory = foi.getCategory();
-        if (!foiCategory.equals(Category.PRIMITIVE) && !foiCategory.equals(Category.LIST)) {
-		  throw new SerDeException("We don't yet support nested types (found "
-            + f.getFieldObjectInspector().getTypeName() + ")");
-        }
-        Object value = ObjectInspectorUtils.copyToStandardJavaObject(inspector.getStructFieldData(data, f),
-        f.getFieldObjectInspector());
+        Object structFieldData = inspector.getStructFieldData(data, structField);
+        Object value = copyToStandardJavaObject(structFieldData, structField.getFieldObjectInspector());
         if (foiCategory.equals(Category.PRIMITIVE)) {
-          doc.addField(docFieldName, value);
+          try {
+            String fieldName = docFieldName;
+
+            if(enableFieldMapping) {
+              fieldName = FieldMappingHelper.fieldMapping(fieldName, value);
+            }
+
+            doc.addField(fieldName, value);
+          } catch (Exception e) {
+            continue;
+          }
+
+        } else if (foiCategory.equals(Category.LIST)) {
+          try {
+            ArrayProcessor.resolve(enableFieldMapping, doc, docFieldName, data, structField, inspector);
+          } catch (Exception e) {
+            continue;
+          }
+        } else if (foiCategory.equals(Category.MAP)) {
+          try {
+            MapProcessor.resolve(enableFieldMapping, doc, docFieldName, data, structField, inspector);
+          } catch (Exception e) {
+            continue;
+          }
         } else {
-          ListObjectInspector loi = (ListObjectInspector) f.getFieldObjectInspector();
-          if (loi.getListElementObjectInspector().getCategory() != Category.PRIMITIVE) {
-            throw new SerDeException("We don't support arrays of non-primitive types (found "
-              + f.getFieldObjectInspector().getTypeName() + ")");
-          }
-          for (int j = 0; j < loi.getListLength(value); j++) {
-            Object itemValue = ObjectInspectorUtils.copyToStandardJavaObject(loi.getListElement(value, j),
-              loi.getListElementObjectInspector());
-            doc.addField(docFieldName, itemValue);
-          }
+          continue;
         }
       }
+    }
+
+    if (!existsId) {
+      doc.setId(String.valueOf(UUID.randomUUID()));
     }
 
     return new LWDocumentWritable(doc);
