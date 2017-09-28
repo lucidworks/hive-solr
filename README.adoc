@@ -1,5 +1,5 @@
 :packageUser: solr
-:connectorVersion: 2.2.6
+:connectorVersion: 2.6.3
 
 = Hive SerDe
 
@@ -21,9 +21,12 @@ This project includes tools to build a Hive SerDe to index Hive tables to Solr.
 
 This project has a dependency on the `solr-hadoop-common` submodule (contained in a separate GitHub repository, https://github.com/lucidworks/solr-hadoop-common). This submodule must be initialized before building the SerDe .jar.
 
+WARNING: You must use Java 8 or higher to build the .jar.
+
 To initialize the submodule, pull this repo, then:
 
-   git submodule init
+[source,bash]
+git submodule init
 
 Once the submodule has been initialized, the command `git submodule update` will fetch all the data from that project and check out the appropriate commit listed in the superproject. You must initialize and update the submodule before attempting to build the SerDe jar.
 
@@ -31,7 +34,10 @@ The build uses Gradle. However, you do not need to have Gradle already installed
 
 To build the jar files, run this command:
 
-   ./gradlew clean shadowJar --info
+[source,bash]
+----
+./gradlew clean shadowJar --info
+----
 
 This will make two .jar files, one for use with Hive v0.13 *only*, and another that can be used with Hive 0.12, 0.14,  0.15.
 
@@ -152,7 +158,9 @@ If you use Lucidworks Fusion, you can index data from Hive to Solr via Fusion's 
 
 [TIP]
 ====
-If you are using Fusion, you already have the Hive SerDe in Fusion's `./apps/connectors/resources/lucid.hadoop/jobs` directory. The SerDe jar that supports Fusion is v2.2.4 or higher. This was released with Fusion 3.0.
+If you are using Fusion v3.0.x, you already have the Hive SerDe in Fusion's `./apps/connectors/resources/lucid.hadoop/jobs` directory. The SerDe jar that supports Fusion is v2.2.4 or higher. This was released with Fusion 3.0.
+
+If you are using Fusion 3.1.x, you will need to download the Hive SerDe from http://lucidworks.com/connectors/. Choose the proper Hadoop distribution and the resulting .zip file will include the Hive SerDe.
 
 A 2.2.4 or higher jar built from this repository will also work with Fusion 2.4.x releases.
 ====
@@ -160,16 +168,21 @@ A 2.2.4 or higher jar built from this repository will also work with Fusion 2.4.
 This is an example Hive command to create an external table to index documents in Fusion and to query the table later.
 
 [source,sql]
+----
 hive> CREATE EXTERNAL TABLE fusion (id string, field1 string, field2 int)
       STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'
       LOCATION '/tmp/fusion'
       TBLPROPERTIES('fusion.endpoints' = 'http://localhost:8764/api/apollo/index-pipelines/<pipeline>/collections/<collection>/index',
+                    'fusion.fail.on.error' = 'false',
+                    'fusion.buffer.timeoutms' = '1000',
+                    'fusion.batchSize' = '500',
                     'fusion.realm' = 'KERBEROS',
                     'fusion.user' = 'fusion-indexer@FUSIONSERVER.COM',
                     'java.security.auth.login.config' = '/path/to/JAAS/file',
-                    'fusion.jaas.appname' = 'FusionClient',);
-                    'fusion.query.endpoints' = 'http://localhost:8764/api/apollo/query-pipelines/<pipeline>/collections/<collection>/<handler>/?',
-                    'fusion.query' = '*:*'
+                    'fusion.jaas.appname' = 'FusionClient',
+                    'fusion.query.endpoints' = 'http://localhost:8764/api/apollo/query-pipelines/pipeline-id/collections/collection-id',
+                    'fusion.query' = '*:*');
+----
 
 In this example, we have created an external table named "fusion", and defined a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'`).
 
@@ -179,6 +192,15 @@ In the section TBLPROPERTIES, we define several properties for Fusion so the dat
 
 `fusion.endpoints`::
 The full URL to the index pipeline in Fusion. The URL should include the pipeline name and the collection data will be indexed to.
+
+`fusion.fail.on.error`::
+If `true`, when an error is encountered, such as if a row could not be parsed, indexing will stop. This is `false` by default.
+
+`fusion.buffer.timeoutms`::
+The amount of time, in milliseconds, to buffer documents before sending them to Fusion. The default is 1000. Documents will be sent to Fusion when either this value or `fusion.batchSize` is met.
+
+`fusion.batchSize`::
+The number of documents to batch before sending the batch to Fusion. The default is 500. Documents will be sent to Fusion when either this value or `fusion.buffer.timeoutms` is met.
 
 `fusion.realm`::
 This is used with `fusion.user` and `fusion.password` to authenticate to Fusion for indexing data. Two options are supported, `KERBEROS` or `NATIVE`.
@@ -296,7 +318,7 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 // end::using-serde[]
 
 // tag::contribute[]
-== How to contribute
+== How to Contribute
 
 . Fork this repo i.e. <username|organization>/hadoop-solr, following the http://help.github.com/fork-a-repo/[fork a repo/] tutorial. Then, clone the forked repo on your local machine:
 +
