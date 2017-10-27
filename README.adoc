@@ -30,6 +30,16 @@ git submodule init
 
 Once the submodule has been initialized, the command `git submodule update` will fetch all the data from that project and check out the appropriate commit listed in the superproject. You must initialize and update the submodule before attempting to build the SerDe jar.
 
+* if a build is happening from a branch, please make sure that `solr-hadoop-common` is pointing to the correct SHA.
+(see https://github.com/blog/2104-working-with-submodules for more details)
+[source]
+----
+   hive-solr $ git checkout <branch-name>
+   hive-solr $ cd solr-hadoop-common
+   hive-solr/solr-hadoop-common $ git checkout <SHA>
+   hive-solr/solr-hadoop-common $ cd ..
+----
+
 The build uses Gradle. However, you do not need to have Gradle already installed before attempting to build.
 
 To build the jar files, run this command:
