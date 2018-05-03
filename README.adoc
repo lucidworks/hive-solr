@@ -16,6 +16,9 @@ This project includes tools to build a Hive SerDe to index Hive tables to Solr.
 ** Fusion's query pipelines can be used to query Fusion's Solr instance for data to insert into a Hive table.
 // end::hive-features[]
 
+
+NOTE: This SerDe does not yet officially support Hive 2.x.
+
 // tag::build-hive[]
 == Build the SerDe Jars
 
