@@ -1,8 +1,5 @@
 include 'solr-hive-core'
-include 'solr-hive-core-0.13'
-
 include 'solr-hive-serde'
-include 'solr-hive-serde-0.13'
 
 include 'solr-hadoop-common:solr-hadoop-io'
 include 'solr-hadoop-common:solr-hadoop-testbase'
