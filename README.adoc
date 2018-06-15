@@ -52,10 +52,7 @@ To build the jar files, run this command:
 ./gradlew clean shadowJar --info
 ----
 
-This will make two .jar files, one for use with Hive v0.13 *only*, and another that can be used with Hive 0.12, 0.14,  0.15.
-
-* `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`
-* `solr-hive-serde-0.13/build/libs/{packageUser}-hive-serde-0.13-{connectorVersion}.jar`
+This will build a single .jar file, `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`, which can be used with Hive v0.14, v0.15, and v1.2.1.  Other Hive versions may work with this jar, but have not been tested.
 
 === Troubleshooting Clone Issues
 
