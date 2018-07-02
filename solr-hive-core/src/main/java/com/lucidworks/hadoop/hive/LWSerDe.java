@@ -29,8 +29,6 @@ import java.util.UUID;
 import static com.lucidworks.hadoop.hive.HiveSolrConstants.ENABLE_FIELD_MAPPING;
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.copyToStandardJavaObject;
 
-// deprecation -> SerDe
-@SuppressWarnings("deprecation")
 public class LWSerDe extends AbstractSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(LWSerDe.class);
