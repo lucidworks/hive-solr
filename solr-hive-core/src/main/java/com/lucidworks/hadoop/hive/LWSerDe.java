@@ -4,8 +4,8 @@ import com.lucidworks.hadoop.io.LWDocument;
 import com.lucidworks.hadoop.io.LWDocumentProvider;
 import com.lucidworks.hadoop.io.LWDocumentWritable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -29,9 +29,7 @@ import java.util.UUID;
 import static com.lucidworks.hadoop.hive.HiveSolrConstants.ENABLE_FIELD_MAPPING;
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.copyToStandardJavaObject;
 
-// deprecation -> SerDe
-@SuppressWarnings("deprecation")
-public class LWSerDe implements SerDe {
+public class LWSerDe extends AbstractSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(LWSerDe.class);
 
@@ -44,8 +42,8 @@ public class LWSerDe implements SerDe {
 
   @Override
   public void initialize(Configuration conf, Properties tblProperties) throws SerDeException {
-    colNames = Arrays.asList(tblProperties.getProperty(Constants.LIST_COLUMNS).split(","));
-    colTypes = TypeInfoUtils.getTypeInfosFromTypeString(tblProperties.getProperty(Constants.LIST_COLUMN_TYPES));
+    colNames = Arrays.asList(tblProperties.getProperty(serdeConstants.LIST_COLUMNS).split(","));
+    colTypes = TypeInfoUtils.getTypeInfosFromTypeString(tblProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES));
     typeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(colNames, colTypes);
     inspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     row = new ArrayList<>();
