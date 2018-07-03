@@ -41,8 +41,25 @@ subprojects {
       jcenter()
       mavenCentral()
     }
+
+    project.configurations {
+      hadoop2Compile.extendsFrom(project.configurations.compile)
+      hadoop2TestCompile.extendsFrom(project.configurations.testCompile)
+      hadoop2TestRuntime.extendsFrom(project.configurations.testRuntime)
+      // Ensure that "project()" deps elsewhere still a copy of the hadoop classes
+      it."default".extendsFrom(project.configurations.hadoop2Compile)
+    }
+
+    compileJava {
+      classpath = configurations.hadoop2Compile
+    }
+
+    compileTestJava {
+      classpath = configurations.hadoop2TestCompile + sourceSets.main.output
+    }
     
     test {
+      classpath = configurations.hadoop2TestRuntime + sourceSets.main.output + sourceSets.test.output
       reports.html.destination = file("$buildDir/reports/tests")
       reports.junitXml.destination = file("$buildDir/test-results")
     }
