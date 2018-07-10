@@ -46,20 +46,24 @@ subprojects {
       hadoop2Compile.extendsFrom(project.configurations.compile)
       hadoop2TestCompile.extendsFrom(project.configurations.testCompile)
       hadoop2TestRuntime.extendsFrom(project.configurations.testRuntime)
+
+      hadoop3Compile.extendsFrom(project.configurations.compile)
+      hadoop3TestCompile.extendsFrom(project.configurations.testCompile)
+      hadoop3TestRuntime.extendsFrom(project.configurations.testRuntime)
       // Ensure that "project()" deps elsewhere still a copy of the hadoop classes
       it."default".extendsFrom(project.configurations.hadoop2Compile)
     }
 
     compileJava {
-      classpath = configurations.hadoop2Compile
+      classpath = configurations.hadoop3Compile
     }
 
     compileTestJava {
-      classpath = configurations.hadoop2TestCompile + sourceSets.main.output
+      classpath = configurations.hadoop3TestCompile + sourceSets.main.output
     }
     
     test {
-      classpath = configurations.hadoop2TestRuntime + sourceSets.main.output + sourceSets.test.output
+      classpath = configurations.hadoop3TestRuntime + sourceSets.main.output + sourceSets.test.output
       reports.html.destination = file("$buildDir/reports/tests")
       reports.junitXml.destination = file("$buildDir/test-results")
     }
@@ -102,19 +106,19 @@ project('solr-hive-core') {
       exclude group: 'org.apache.hadoop'
       exclude group: 'junit'
     }
-    compile("org.apache.hadoop:hadoop-common:${hadoop2Version}@jar")
-    compile("org.apache.hadoop:hadoop-client:${hadoop2Version}") {
+    compile("org.apache.hadoop:hadoop-common:${hadoop3Version}@jar")
+    compile("org.apache.hadoop:hadoop-client:${hadoop3Version}") {
       exclude group: 'log4j'
       exclude group: 'org.slf4j'
     }
 
-    compile("org.apache.hadoop:hadoop-auth:${hadoop2Version}") {
+    compile("org.apache.hadoop:hadoop-auth:${hadoop3Version}") {
       transitive = false
     }
-    compile("org.apache.hadoop:hadoop-mapreduce-client-core:${hadoop2Version}") {
+    compile("org.apache.hadoop:hadoop-mapreduce-client-core:${hadoop3Version}") {
       transitive = false
     }
-    compile("org.apache.hadoop:hadoop-hdfs:${hadoop2Version}@jar") {
+    compile("org.apache.hadoop:hadoop-hdfs:${hadoop3Version}@jar") {
       transitive = false
     }
 
@@ -126,7 +130,6 @@ project('solr-hive-core') {
       exclude group: 'junit'
     }
     testCompile "org.apache.mrunit:mrunit:1.0.0:hadoop2@jar"
-    testCompile "com.klarna:hiverunner:3.2.0"
     testCompile "junit:junit:4.12"
     testCompile (project(':solr-hadoop-common:solr-hadoop-testbase')) {
       transitive = false
@@ -134,6 +137,11 @@ project('solr-hive-core') {
     testCompile(project(':solr-hadoop-common:solr-hadoop-document')) {
       transitive = false
     }
+
+    // The com.klarna:hiverunner project doesn't currently support Hive 3, so we temporarily
+    // rely on a custom HiveRunner fork to run tests against a Hive 3 instance.  The code for this
+    // dep can be found here: https://github.com/gerlowskija/HiveRunner/tree/hive_3_0_0
+    testCompile files('libs/hiverunner-hive3-0.0.1.jar')
   }
 }
 
