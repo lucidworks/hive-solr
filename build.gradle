@@ -44,10 +44,12 @@ subprojects {
 
     project.configurations {
       hadoop2Compile.extendsFrom(project.configurations.compile)
+      hadoop2Runtime.extendsFrom(project.configurations.runtime, hadoop2Compile)
       hadoop2TestCompile.extendsFrom(project.configurations.testCompile)
       hadoop2TestRuntime.extendsFrom(project.configurations.testRuntime)
 
       hadoop3Compile.extendsFrom(project.configurations.compile)
+      hadoop3Runtime.extendsFrom(project.configurations.runtime, hadoop3Compile)
       hadoop3TestCompile.extendsFrom(project.configurations.testCompile)
       hadoop3TestRuntime.extendsFrom(project.configurations.testRuntime)
       // Ensure that "project()" deps elsewhere still a copy of the hadoop classes
