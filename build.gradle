@@ -53,7 +53,7 @@ subprojects {
       hadoop3TestCompile.extendsFrom(project.configurations.testCompile)
       hadoop3TestRuntime.extendsFrom(project.configurations.testRuntime)
       // Ensure that "project()" deps elsewhere still a copy of the hadoop classes
-      it."default".extendsFrom(project.configurations.hadoop2Compile)
+      it."default".extendsFrom(project.configurations.hadoop3Runtime)
     }
 
     compileJava {
