@@ -1,5 +1,6 @@
 :packageUser: solr
-:connectorVersion: 2.6.3
+:connectorVersion: 4.0.0
+:toc:
 
 = Hive SerDe
 
@@ -11,13 +12,13 @@ This project includes tools to build a Hive SerDe to index Hive tables to Solr.
 * Index Hive table data to Solr.
 * Read Solr index data to a Hive table.
 * Kerberos support for securing communication between Hive and Solr.
-* As of v2.2.4 of the SerDe, integration with  http://lucidworks.com/fusion[Lucidworks Fusion] is supported.
+* As of v2.2.4 of the SerDe, integration with http://lucidworks.com/products[Lucidworks Fusion] is supported.
 ** Fusion's index pipelines can be used to index data to Fusion.
 ** Fusion's query pipelines can be used to query Fusion's Solr instance for data to insert into a Hive table.
 // end::hive-features[]
 
 
-NOTE: This version of `hive-solr` supports Hive 3.0.0.  For support for Hive 1.x, see the `hive_1x` branch.
+NOTE: This version of `hive-solr` supports Hive 3.0.0. For support for Hive 1.x, see the `hive_1x` branch.
 
 NOTE: `hive-solr` should only be used with Solr 5.0 and higher.
 
@@ -54,7 +55,7 @@ To build the jar files, run this command:
 ./gradlew clean shadowJar --info
 ----
 
-This will build a single .jar file, `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`, which can be used with Hive v0.14, v0.15, and v1.2.1.  Other Hive versions may work with this jar, but have not been tested.
+This will build a single .jar file, `solr-hive-serde/build/libs/{packageUser}-hive-serde-{connectorVersion}.jar`, which can be used with Hive v3.0.  Other Hive versions (such as v2.x) may work with this jar, but have not been tested.
 
 === Troubleshooting Clone Issues
 
