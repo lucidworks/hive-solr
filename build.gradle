@@ -163,6 +163,8 @@ project('solr-hive-serde') {
     relocate 'org.apache.solr', 'shaded.org.apache.solr'
     // Shade guava due Tez conflicts
     relocate 'com.google.common', 'shaded.com.google.common'
+
+    relocate 'jline', 'shaded.jline'
     // Remove unwanted files in root jar (repackaging)
     exclude 'JDOMAbout*.class'
     exclude '.gitkeep'
