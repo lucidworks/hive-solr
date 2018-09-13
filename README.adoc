@@ -88,7 +88,7 @@ NOTE: The following options all assume you have created such a directory at `/us
 
 . If you use Hive with Ambari (as with the Hortonworks HDP distribution), go to menu:Hive[Configs > Advanced], and scroll down to menu:Advanced hive-env[hive-env template]. Find the section where the `HIVE_AUX_JARS_PATH` is defined, and add the path to each line which starts with `export`. What you want will end up looking like:
 +
-[source,python]
+[source,plain]
 ----
 # Folder containing extra libraries required for hive compilation/execution can be controlled by:
 if [ "${HIVE_AUX_JARS_PATH}" != "" ]; then
@@ -141,7 +141,7 @@ hive> CREATE EXTERNAL TABLE solr (id string, field1_s string, field2_i int) <1>
 
 <1> In this example, we have created an external table named "solr", and defined a set of fields and types for the data we will store in the table. See the section <<Defining Fields for Solr>> below for best practices when naming fields.
 
-<2> This defines a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler'`), which is the class included with the Hive SerDe jar.
+<2> This defines a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler'`), which is one of the classes included with the Hive SerDe jar.
 
 <3> The LOCATION indicates the location in HDFS where the table data will be stored. In this example, we have chosen to use `/tmp/solr`.
 
@@ -175,7 +175,7 @@ For more information about these features and options, please see the following 
 * https://lucene.apache.org/solr/guide/{refGuideVersion}/field-types-included-with-solr.html[Field Types Included with Solr]
 
 ==== Table Properties
-Some of the following properties are optional.
+The following parameters can be set when defining the table properties:
 
 `solr.zkhost`::
 The location of the ZooKeeper quorum if using LucidWorks in SolrCloud mode. If this property is set along with the `solr.server.url` property, the `solr.server.url` property will take precedence.
@@ -253,7 +253,9 @@ hive> CREATE EXTERNAL TABLE fusion (id string, field1_s string, field2_i int)
                     'fusion.query' = '*:*');
 ----
 
-In this example, we have created an external table named "fusion", and defined a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'`).
+In this example, we have created an external table named "fusion", and defined a custom storage handler (`STORED BY 'com.lucidworks.hadoop.hive.FusionStorageHandler'`) that a class included with the Hive SerDe jar designed for use with Fusion.
+
+Note that all of the same caveats about field types discussed in the section <<Defining Fields for Solr>> apply to Fusion as well. In Fusion, however, you have the option of using an index pipeline to perform specific field mapping instead of using dynamic fields.
 
 The LOCATION indicates the location in HDFS where the table data will be stored. In this example, we have chosen to use `/tmp/fusion`.
 
@@ -326,16 +328,16 @@ If you do not intend to query your Fusion data from Hive, you can skip this para
 
 Once the table is configured, any syntactically correct Hive query will be able to query the index.
 
-For example, to select three fields named "id", "field1", and "field2" from the "solr" table, you would use a query such as:
+For example, to select three fields named "id", "field1_s", and "field2_i" from the "solr" table, you would use a query such as:
 
-`hive> SELECT id, field1, field2 FROM solr;`
+`hive> SELECT id, field1_s, field2_i FROM solr;`
 
 Replace the table name as appropriate to use this example with your data.
 
 To join data from tables, you can make a request such as:
 
 [source,sql]
-hive> SELECT id, field1, field2 FROM solr left
+hive> SELECT id, field1_s, field2_i FROM solr left
       JOIN sometable right
       WHERE left.id = right.id;
 
@@ -343,7 +345,7 @@ And finally, to insert data to a table, simply use the Solr table as the target 
 
 [source,sql]
 hive> INSERT INTO solr
-      SELECT id, field1, field2 FROM sometable;
+      SELECT id, field1_s, field2_i FROM sometable;
 
 // end::query-hive[]
 
