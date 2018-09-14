@@ -361,13 +361,13 @@ CREATE TABLE books (id STRING, cat STRING, title STRING, price FLOAT, in_stock B
 
 LOAD DATA LOCAL INPATH '/solr/example/exampledocs/books.csv' OVERWRITE INTO TABLE books; --<2>
 
-CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLOAT, in_stock_b BOOLEAN, author_s STRING, series_s STRING, seq_i INT, genre_s STRING) --<4>
-     STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler' --<5>
-     LOCATION '/tmp/solr' --<6>
+CREATE EXTERNAL TABLE solr (id STRING, cat_s STRING, title_s STRING, price_f FLOAT, in_stock_b BOOLEAN, author_s STRING, series_s STRING, seq_i INT, genre_s STRING) --<3>
+     STORED BY 'com.lucidworks.hadoop.hive.LWStorageHandler' --<4>
+     LOCATION '/tmp/solr' --<5>
      TBLPROPERTIES('solr.zkhost' = 'zknode1:2181,zknode2:2181,zknode3:2181/solr',
                    'solr.collection' = 'gettingstarted',
-                   'solr.query' = '*:*', --<7>
-                   'lww.jaas.file' = '/data/jaas-client.conf'); --<8>
+                   'solr.query' = '*:*', --<6>
+                   'lww.jaas.file' = '/data/jaas-client.conf'); --<7>
 
 
 INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
@@ -375,12 +375,11 @@ INSERT OVERWRITE TABLE solr SELECT b.* FROM books b;
 
 <1> Define the table `books`, and provide the field names and field types that will make up the table.
 <2> Load the data from the `books.csv` file.
-<3> Add the `{packageUser}-hive-serde-{connectorVersion}.jar` file to Hive. Note the jar name shown here omits the version information which will be included in the jar file you have. If you are using Hive 0.13, you must also use a jar specifically built for 0.13.
-<4> Create an external table named `solr`, and provide the field names and field types that will make up the table. These will be the same field names as in your local Hive table, so we can index all of the same data to Solr.
-<5> Define the custom storage handler provided by the `{packageUser}-hive-serde-{connectorVersion}.jar`.
-<6> Define storage location in HDFS.
-<7> The query to run in Solr to read records from Solr for use in Hive.
-<8> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table. This example also refers to a JAAS configuration file that will be used to authenticate to the Kerberized Solr cluster.
+<3> Create an external table named `solr`, and provide the field names and field types that will make up the table. These will be the same field names as in your local Hive table, so we can index all of the same data to Solr.
+<4> Define the custom storage handler provided by the `{packageUser}-hive-serde-{connectorVersion}.jar`.
+<5> Define storage location in HDFS.
+<6> The query to run in Solr to read records from Solr for use in Hive.
+<7> Define the location of Solr (or ZooKeeper if using SolrCloud), the collection in Solr to index the data to, and the query to use when reading the table. This example also refers to a JAAS configuration file that will be used to authenticate to the Kerberized Solr cluster.
 
 // end::example-hive[]
 
