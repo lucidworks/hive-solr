@@ -157,6 +157,8 @@ project('solr-hive-serde') {
     dependencies {
       exclude(dependency("org.apache.hadoop:.*"))
       exclude(dependency("org.apache.hive:.*"))
+      exclude(dependency("com.sun.jersey:.*"))
+      exclude(dependency("com.sun.jersey.*:.*"))
     }
 
     relocate 'org.apache.http', 'shaded.org.apache.http'
